@@ -6,8 +6,8 @@
     <title>埔里不碳氣 - 智慧觀光與綠色旅遊平台</title>
     
     <!-- 引入 Tailwind CSS -->
-    <script  type="module" src="https://cdn.tailwindcss.com"></script  type="module">
-    <script  type="module">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -28,7 +28,7 @@
                 }
             }
         }
-    </script  type="module">
+    </script>
     <style>
         /* 隱藏滾動條的輔助樣式 */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -37,17 +37,17 @@
     </style>
 
     <!-- 引入 React 與 ReactDOM -->
-    <script  type="module" src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script  type="module">
-    <script  type="module" src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script  type="module">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     
     <!-- 引入 Babel 供瀏覽器即時編譯 JSX -->
-    <script  type="module" src="https://unpkg.com/@babel/standalone/babel.min.js"></script  type="module">
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
     <div id="root"></div>
 
-    <script  type="module" type="text/babel">
+    <script type="text/babel">
         const { useState, useEffect } = React;
 
         // --- 取代 lucide-react 的原生 SVG 圖示元件 ---
