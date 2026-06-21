@@ -40,17 +40,20 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     
-    <!-- 引入 Babel 供瀏覽器即時編譯 JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 引入 Babel 供瀏覽器即時編譯 JSX (指定穩定版本以避免自動注入 import 導致的模組錯誤) -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
     <div id="root"></div>
 
     <script type="text/babel">
+        /** @jsx React.createElement */
+        /** @jsxFrag React.Fragment */
+
         const { useState, useEffect } = React;
 
-        // --- 取代 lucide-react 的原生 SVG 圖示元件 ---
+        // --- 取代 import 的原生 SVG 圖示元件 ---
         const IconBase = ({ d, className = "w-5 h-5", children, ...props }) => (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
                 {d && <path d={d} />}
@@ -72,7 +75,6 @@
         const CheckCircle = (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>;
         const ArrowRight = (props) => <IconBase {...props}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></IconBase>;
         const MapPin = (props) => <IconBase {...props}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconBase>;
-        const Footprints = (props) => <IconBase {...props}><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></IconBase>;
         const Gift = (props) => <IconBase {...props}><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></IconBase>;
         const ChevronRight = (props) => <IconBase {...props}><polyline points="9 18 15 12 9 6"/></IconBase>;
         const X = (props) => <IconBase {...props}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconBase>;
@@ -81,66 +83,65 @@
         const HelpCircle = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></IconBase>;
         const Umbrella = (props) => <IconBase {...props}><path d="M22 12a10.06 10.06 0 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0"/><path d="M12 2v1"/></IconBase>;
 
-        // --- Mock Data (模擬資料) ---
         const spotsData = [
           { 
-            id: 3, name: '紙教堂', nameEn: 'Paper Dome', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 20, type: 'culture', dist: '4.5 km', desc: '依據 Google 熱門時段，目前為離峰時段，非常舒適。', descEn: 'Currently off-peak, very comfortable.',
+            id: 3, name: '紙教堂', nameEn: 'Paper Dome', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 20, type: 'culture', dist: '4.5 km',
             longDesc: '紙教堂是一座承載著重生與希望的獨特建築，最初為日本阪神大地震後由日本建築師坂茂設計，後跨海移築至埔里桃米社區。主體由58根堅固的紙管支撐，透出溫暖柔和的光線。園區內生態豐富，擁有美麗的荷花池與多樣的青蛙棲地，是結合環境教育、社區營造與生態永續的絕佳示範場域，非常適合喜愛自然與人文的旅客漫步停留。',
             longDescEn: 'The Paper Dome is a unique structure symbolizing rebirth and hope. Originally designed by Japanese architect Shigeru Ban, it was relocated to Taomi, Puli. Supported by 58 sturdy paper tubes, it radiates a warm light. The park boasts rich ecology and frog habitats, making it an excellent model for eco-education and sustainability.'
           },
           { 
-            id: 4, name: '鯉魚潭', nameEn: 'Liyu Lake', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 15, type: 'nature', dist: '5.2 km', desc: '依據 Google 熱門時段，此時段遊客稀少，適合散步。', descEn: 'Few tourists, perfect for a walk.',
+            id: 4, name: '鯉魚潭', nameEn: 'Liyu Lake', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 15, type: 'nature', dist: '5.2 km',
             longDesc: '鯉魚潭被譽為「小西湖」，是一處天然的湖泊，四周群山環抱，湖面波光粼粼，風景如畫。這裡有完善的環湖步道，漫步其中可以享受微風拂面的愜意，還能欣賞傳說中的「七穴」風水奇景。潭面上有著著名的柳堤，兩側種滿垂柳，隨風搖曳極具詩意。無論是騎乘單車還是悠閒散步，都能讓人遠離塵囂，徹底放鬆身心，享受大自然的寧靜。',
             longDescEn: 'Known as "Little West Lake," Liyu Lake is a natural lake surrounded by lush mountains with sparkling waters. It features a well-maintained round-the-lake trail, perfect for enjoying the breeze and exploring the "Seven Holes" Feng Shui wonders. The famous willow dike adds a poetic touch. It offers a peaceful retreat for walking or cycling.'
           },
           { 
-            id: 5, name: '虎頭山觀景台', nameEn: 'Hutoushan Lookout', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 25, type: 'nature', dist: '3.1 km', desc: '傍晚前人潮較少，接近日落時分（17:00後）人流會增加。', descEn: 'Quiet before evening, crowd increases near sunset.',
+            id: 5, name: '虎頭山觀景台', nameEn: 'Hutoushan Lookout', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 25, type: 'nature', dist: '3.1 km',
             longDesc: '虎頭山是埔里盆地的絕佳制高點，海拔高度適中，不僅是全台知名的飛行傘基地，更是俯瞰整個埔里鎮市區美景的最佳去處。白天可以看見層巒疊嶂的青山與城鎮聚落交織的壯麗景色，傍晚時分則是欣賞夕陽西下、晚霞滿天的浪漫勝地。入夜後，這裡更能飽覽璀璨的百萬夜景。步道規劃完善，是享受微風與開闊視野的自然秘境。',
             longDescEn: 'Hutoushan is an excellent vantage point overlooking the Puli Basin. Not only is it a famous paragliding base, but it also offers the best panoramic views of Puli Township. By day, you can see majestic mountains intertwined with the town; at dusk, it becomes a romantic spot to watch sunsets. At night, it offers a stunning night view.'
           },
           { 
-            id: 7, name: '國立暨南國際大學', nameEn: 'National Chi Nan University', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'medium', crowd: 50, type: 'nature', dist: '6.0 km', desc: '校園佔地廣大，目前有學生作息與部分散步人潮。', descEn: 'Large campus, students and some walkers present.',
+            id: 7, name: '國立暨南國際大學', nameEn: 'National Chi Nan University', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'medium', crowd: 50, type: 'nature', dist: '6.0 km',
             longDesc: '暨南國際大學座落於群山之間，佔地廣達150公頃，被譽為全台最美的森林大學之一。校園內擁有連綿不絕的廣闊大草坪、挺拔的台灣松林以及隨季節變換美景的櫻花林與台灣欒樹。這裡沒有圍牆的束縛，大自然與學術氣息完美融合，非常適合全家大小在此野餐、散步，呼吸純淨的芬多精，是一處能深刻體驗低碳綠色生活的優質景點。',
             longDescEn: 'Nestled in the mountains, NCNU spans 150 hectares and is known as one of Taiwan\'s most beautiful forest universities. The campus features expansive lawns, pine forests, and seasonal cherry blossoms. With no boundary walls, nature and academia blend perfectly. It\'s an ideal place for picnics, walks, and experiencing low-carbon green living.'
           },
           { 
-            id: 8, name: '廣興紙寮', nameEn: 'Guangxing Paper Mill', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 30, type: 'culture', dist: '2.1 km', desc: '依據 Google 熱門時段，目前人潮不多，體驗無需久候。', descEn: 'Not crowded, no long waits for experiences.',
+            id: 8, name: '廣興紙寮', nameEn: 'Guangxing Paper Mill', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 30, type: 'culture', dist: '2.1 km',
             longDesc: '廣興紙寮是台灣目前少數仍堅持傳統手工造紙工藝的產業館。來到這裡，您可以親眼見證從樹皮、竹子甚至埔里特產「茭白筍殼」轉化為一張張珍貴手工紙的奇妙過程。園區提供豐富的DIY體驗活動，讓遊客親自下水抄紙、烘紙，並進行特色拓印，不僅能帶回獨一無二的作品，更能深刻體會惜物愛物與環境永續的綠色理念，非常適合親子同樂。',
             longDescEn: 'Guangxing Paper Mill is one of the few remaining workshops in Taiwan dedicated to traditional handmade papercraft. Visitors can witness the magical process of transforming tree bark and "water bamboo shoots" into handmade paper. The park offers engaging DIY experiences, allowing guests to make their own paper and learn about environmental sustainability.'
           },
           { 
-            id: 9, name: '桃米生態村', nameEn: 'Taomi Eco-Village', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 20, type: 'nature', dist: '5.0 km', desc: '平日下午遊客較少，生態導覽與步道品質極佳。', descEn: 'Few tourists on weekday afternoons, excellent eco-tours.',
+            id: 9, name: '桃米生態村', nameEn: 'Taomi Eco-Village', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 20, type: 'nature', dist: '5.0 km',
             longDesc: '桃米生態村是台灣生態保育與社區營造的成功典範。這個隱身於山林中的小村落，擁有極為豐富的生物多樣性，特別是青蛙、蝴蝶與蜻蜓的種類冠絕全台。漫步在村內的親水公園與生態步道，隨處可見生機盎然的自然景象。透過在地專業導覽，遊客可以深入了解濕地生態，在夜間還能參與趣味十足的賞蛙活動，是一堂生動且珍貴的大自然課程。',
             longDescEn: 'Taomi Eco-Village is a successful model of ecological conservation in Taiwan. Hidden in the forests, this village boasts incredible biodiversity, especially known for its frogs and butterflies. Walking along the eco-trails, visitors are surrounded by vibrant nature. Guided tours offer deep insights into wetland ecosystems and fun night frog-watching activities.'
           },
           { 
-            id: 10, name: '水上瀑布', nameEn: 'Shuishang Waterfall', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 10, type: 'nature', dist: '8.5 km', desc: '非假日期間人煙稀少，屬於清幽秘境狀態。', descEn: 'Very quiet on non-holidays, a peaceful hidden gem.',
+            id: 10, name: '水上瀑布', nameEn: 'Shuishang Waterfall', subCategory: '自然生態景點', subCategoryEn: 'Nature Spot', status: 'low', crowd: 10, type: 'nature', dist: '8.5 km',
             longDesc: '水上瀑布隱藏於桃米社區的深處，是一處鮮少人知的清幽秘境。沿著綠意盎然的森林步道漫步，伴隨著潺潺溪水聲，不久便能看見瀑布如白練般從岩壁傾瀉而下，水花飛濺，帶來豐沛的負離子與清涼感。這裡保留了最原始的自然風貌，未經過度開發，是喜愛探險、渴望遠離都市喧囂並享受靜謐森林浴的旅人們，不可錯過的綠色絕佳去處。',
             longDescEn: 'Hidden deep within the Taomi community, Shuishang Waterfall is a serene, little-known secret spot. Walking along the lush forest trail accompanied by the sound of a stream, you\'ll see the waterfall cascading down the rock face. It retains its pristine natural beauty, perfect for those seeking a quiet forest bath away from the city.'
           },
           { 
-            id: 11, name: '賴爺爺蜜蜂小森林', nameEn: 'Grandpa Lai Bee Farm', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 25, type: 'nature', dist: '1.5 km', desc: '依據 Google 熱門時段，目前人流較低，適合悠閒參觀。', descEn: 'Low foot traffic, good for a relaxing visit.',
+            id: 11, name: '賴爺爺蜜蜂小森林', nameEn: 'Grandpa Lai Bee Farm', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 25, type: 'nature', dist: '1.5 km',
             longDesc: '賴爺爺蜜蜂小森林是一個將養蜂產業與自然教育完美結合的精緻園區。在這裡，您可以近距離觀察蜜蜂的生態作息，了解這些勤奮的小昆蟲對地球生態系與環境永續的重要貢獻。園區環境清幽，種植了許多蜜源植物，散發著淡淡的花香。除了生態導覽，還能品嚐到最純淨在地的新鮮蜂蜜與相關特色甜點，是一處兼具知識性與休閒放鬆的綠色景點。',
             longDescEn: 'Grandpa Lai Bee Farm is a delightful park combining the beekeeping industry with nature education. Visitors can observe bees up close and learn about their crucial contribution to the Earth\'s ecosystem. The park is planted with numerous nectar-producing plants. Besides eco-tours, you can taste pure, fresh local honey, making it an educational green destination.'
           },
-          { id: 12, name: '埔里總站', nameEn: 'Puli Bus Station', status: 'medium', crowd: 65, type: 'transport', dist: '0.5 km', desc: '依據 Google 熱門時段，接近下班與放學時間，人潮漸增。', descEn: 'Crowd increasing near off-work/school hours.' },
-          { id: 13, name: '台中高鐵站', nameEn: 'Taichung HSR Station', status: 'high', crowd: 80, type: 'transport', dist: '45.0 km', desc: '依據 Google 熱門時段，為中部樞紐，下午維持較高人流。', descEn: 'Central hub, high foot traffic in the afternoon.' },
+          { id: 12, name: '埔里總站', nameEn: 'Puli Bus Station', status: 'medium', crowd: 65, type: 'transport', dist: '0.5 km' },
+          { id: 13, name: '台中高鐵站', nameEn: 'Taichung HSR Station', status: 'high', crowd: 80, type: 'transport', dist: '45.0 km' },
           { 
-            id: 14, name: '敲敲木工房', nameEn: 'Kokomu Music Box', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 15, type: 'culture', dist: '1.8 km', desc: '依據 Google 熱門時段，平日下午人潮較少，體驗木作與音樂盒DIY非常舒適。', descEn: 'Few tourists on weekday afternoons, comfortable DIY experience.',
+            id: 14, name: '敲敲木工房', nameEn: 'Kokomu Music Box', subCategory: '在地環境永續工廠', subCategoryEn: 'Eco-Factory', status: 'low', crowd: 15, type: 'culture', dist: '1.8 km',
             longDesc: '敲敲木工房延續了埔里早年曾是木工藝重鎮的歷史記憶，將傳統木工廠轉型為充滿童趣與創意的體驗空間。館內展示了各式各樣精緻的胡桃鉗娃娃與音樂盒，充滿濃濃的童話氛圍。這裡提倡使用永續木材，遊客可以發揮創意，親手DIY組裝並彩繪專屬的音樂盒或木質玩具。這是一個非常適合親子共遊，在敲敲打打中體驗工藝之美與環保理念的溫馨場所。',
             longDescEn: 'Kokomu Music Box continues Puli\'s history as a woodworking hub, transforming a traditional factory into a creative space. The hall displays exquisite nutcrackers and music boxes, creating a fairy-tale atmosphere. Advocating the use of sustainable wood, visitors can DIY assemble and paint their own music boxes. It\'s a heartwarming place for families to experience craftsmanship.'
           }
         ];
 
         const rewardsData = [
-          { id: 1, title: '全品項 8 折優惠', titleEn: '20% Off All Items', points: 30, partner: '炎術飲料', partnerEn: 'Yanshu Beverage' },
-          { id: 2, title: '享有一份炸物(任選)', titleEn: 'Free Snack (Any)', points: 100, partner: '鍋去啃', partnerEn: 'Guoquken' },
-          { id: 3, title: '免費兌換一份小菜', titleEn: 'Free Side Dish', points: 150, partner: '初煦咖哩', partnerEn: 'Chuxu Curry' },
-          { id: 4, title: '免費兌換當季小品', titleEn: 'Free Seasonal Item', points: 100, partner: '埔里鎮農會', partnerEn: "Puli Farmers' Association" },
-          { id: 5, title: '免費加料乙次', titleEn: 'Free Extra Topping', points: 100, partner: '虎甲製冰所', partnerEn: 'Hujia Shaved Ice' }
+          { id: 1, title: '滿200點享有全品項8折', titleEn: '20% Off All Items (>200pts)', points: 200, partner: '炎術飲料(二店)', partnerEn: 'Yanshu Beverage' },
+          { id: 2, title: '滿300點享有一份炸物(任選)', titleEn: 'Free Snack (>300pts)', points: 300, partner: '鍋去啃', partnerEn: 'Guoquken' },
+          { id: 3, title: '滿150點免費兌換一份小菜', titleEn: 'Free Side Dish (>150pts)', points: 150, partner: '初煦咖哩', partnerEn: 'Chuxu Curry' },
+          { id: 4, title: '滿100點免費兌換當季小品', titleEn: 'Free Seasonal Item (>100pts)', points: 100, partner: '埔里鎮農會', partnerEn: "Puli Farmers' Association" },
+          { id: 5, title: '滿100點免費加料乙次', titleEn: 'Free Extra Topping (>100pts)', points: 100, partner: '虎甲製冰所', partnerEn: 'Hujia Shaved Ice' },
+          { id: 6, title: '免費兌換冰淇淋', titleEn: 'Free Ice Cream (>100pts)', points: 100, partner: '賴爺爺蜜蜂小森林', partnerEn: 'Grandpa Lai Bee Farm' }
         ];
 
-        // --- Custom Icons (自訂圖示) ---
         const LeafStampIcon = ({ className }) => (
           <svg viewBox="0 0 24 24" className={className} xmlns="http://www.w3.org/2000/svg">
             <g transform="rotate(-12 12 12)">
@@ -199,7 +200,6 @@
           </svg>
         );
 
-        // --- Main Component ---
         function App() {
           const [lang, setLang] = useState('zh');
           const [activeTab, setActiveTab] = useState('home');
@@ -213,6 +213,10 @@
           const [isEcoTaskDone, setIsEcoTaskDone] = useState(false);
           const [isFeedbackTaskDone, setIsFeedbackTaskDone] = useState(false);
 
+          const isAllTasksDone = isTransportTaskDone && isConsumptionTaskDone && isOneDayTaskDone && isHalfDayTaskDone && isFactoryTaskDone && isEcoTaskDone && isFeedbackTaskDone;
+
+          const [currentTime, setCurrentTime] = useState('');
+
           const [envData, setEnvData] = useState({ 
             tempMin: '--', tempMax: '--', 
             condition: { zh: '載入中', en: 'Loading' }, 
@@ -223,6 +227,21 @@
           });
 
           const [spots, setSpots] = useState(spotsData);
+
+          useEffect(() => {
+            const updateClock = () => {
+              const now = new Date();
+              const m = (now.getMonth() + 1).toString().padStart(2, '0');
+              const d = now.getDate().toString().padStart(2, '0');
+              const hh = now.getHours().toString().padStart(2, '0');
+              const mm = now.getMinutes().toString().padStart(2, '0');
+              const ss = now.getSeconds().toString().padStart(2, '0');
+              setCurrentTime(`${now.getFullYear()}/${m}/${d} ${hh}:${mm}:${ss}`);
+            };
+            updateClock();
+            const timerId = setInterval(updateClock, 1000);
+            return () => clearInterval(timerId);
+          }, []);
 
           useEffect(() => {
             const updateCrowdData = () => {
@@ -244,12 +263,12 @@
               let uv = 5, uvStatus = { zh: '中量級', en: 'Mod.' };
 
               try {
-                const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=23.96&longitude=120.96&current_weather=true&current=uv_index&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei');
+                const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=23.96&longitude=120.96&current=weather_code,uv_index&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei');
                 if (weatherRes.ok) {
                   const weatherData = await weatherRes.json();
                   tempMax = Math.round(weatherData.daily.temperature_2m_max[0]);
                   tempMin = Math.round(weatherData.daily.temperature_2m_min[0]);
-                  const code = weatherData.current_weather.weathercode;
+                  const code = weatherData.current.weather_code;
                   
                   if (code >= 1 && code <= 3) condition = { zh: '多雲', en: 'Cloudy' };
                   else if (code >= 45 && code <= 48) condition = { zh: '起霧', en: 'Foggy' };
@@ -283,9 +302,9 @@
                       aqi = parseInt(puliData.aqi, 10);
                       if (aqi <= 50) aqiStatus = { zh: '良好', en: 'Good' };
                       else if (aqi <= 100) aqiStatus = { zh: '普通', en: 'Moderate' };
-                      else if (aqi <= 150) aqiStatus = { zh: '敏感不適', en: 'Unhealthy for Sensitive' };
+                      else if (aqi <= 150) aqiStatus = { zh: '敏感不適', en: 'Unhealthy' };
                       else if (aqi <= 200) aqiStatus = { zh: '不健康', en: 'Unhealthy' };
-                      else if (aqi <= 300) aqiStatus = { zh: '非常不健康', en: 'Very Unhealthy' };
+                      else if (aqi <= 300) aqiStatus = { zh: '非常不健康', en: 'V.Unhealthy' };
                       else aqiStatus = { zh: '危害', en: 'Hazardous' };
                     }
                   }
@@ -313,15 +332,16 @@
           const [inputCode, setInputCode] = useState('');
           const [showAllTasksDoneModal, setShowAllTasksDoneModal] = useState(false);
           const [hasShownAllTasksDone, setHasShownAllTasksDone] = useState(false);
+          const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
           useEffect(() => {
-            if (isTransportTaskDone && isConsumptionTaskDone && isOneDayTaskDone && isHalfDayTaskDone && isFactoryTaskDone && isEcoTaskDone && isFeedbackTaskDone) {
+            if (isAllTasksDone) {
               if (!hasShownAllTasksDone) {
                 setShowAllTasksDoneModal(true);
                 setHasShownAllTasksDone(true);
               }
             }
-          }, [isTransportTaskDone, isConsumptionTaskDone, isOneDayTaskDone, isHalfDayTaskDone, isFactoryTaskDone, isEcoTaskDone, isFeedbackTaskDone, hasShownAllTasksDone]);
+          }, [isAllTasksDone, hasShownAllTasksDone]);
 
           const triggerNotification = (msg) => {
             setNotificationMsg(msg);
@@ -379,6 +399,23 @@
                   </div>
                 )}
 
+                {showFeedbackModal && (
+                  <div className="absolute inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-6 backdrop-blur-sm transition-all">
+                    <div className="bg-white rounded-2xl w-full p-6 flex flex-col items-center justify-center shadow-2xl relative animate-slide-up border-2 border-emerald-100">
+                      <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                        <CheckCircle className="w-8 h-8 text-emerald-600" />
+                      </div>
+                      <h2 className="text-xl font-bold text-gray-800 mb-2">{lang === 'en' ? 'Task Completed' : '已完成任務'}</h2>
+                      <p className="text-gray-600 text-center text-sm mb-6">
+                        {lang === 'en' ? 'Thank you for your response! Feedback Form task has been stamped.' : '感謝您的寶貴回饋！「完成回饋表單」任務已蓋章通過。'}
+                      </p>
+                      <button onClick={() => setShowFeedbackModal(false)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors w-full shadow-md active:transform active:scale-95">
+                        {lang === 'en' ? 'Awesome' : '太棒了'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {showRedeemModal && (
                   <div className="absolute inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-6 backdrop-blur-sm transition-all">
                     <div className="bg-white rounded-2xl w-full p-6 flex flex-col items-center justify-center shadow-2xl relative animate-slide-up border-2 border-emerald-100">
@@ -424,7 +461,7 @@
                 )}
 
                 {showHistoryPage && (
-                  <div className="absolute inset-0 bg-slate-50 z-40 flex flex-col animate-slide-up">
+                  <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-up">
                     <header className="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm">
                       <button onClick={() => setShowHistoryPage(false)} className="mr-3 p-1 rounded-full text-gray-500 hover:bg-gray-100 transition-colors">
                         <ChevronRight className="w-6 h-6 rotate-180" />
@@ -512,6 +549,7 @@
                               handleEarnPoints(20, { zh: '完成回饋表單', en: 'Complete Feedback Form' });
                               setIsFeedbackTaskDone(true);
                               setShowCodeModal(false); setInputCode('');
+                              setShowFeedbackModal(true);
                             } else {
                               triggerNotification(lang === 'en' ? 'Invalid code, please check again' : '輸入代碼無效，請重新檢查');
                             }
@@ -552,7 +590,7 @@
                       isTransportTaskDone={isTransportTaskDone} isConsumptionTaskDone={isConsumptionTaskDone} 
                       isOneDayTaskDone={isOneDayTaskDone} isHalfDayTaskDone={isHalfDayTaskDone}
                       isFactoryTaskDone={isFactoryTaskDone} isEcoTaskDone={isEcoTaskDone}
-                      isFeedbackTaskDone={isFeedbackTaskDone}
+                      isFeedbackTaskDone={isFeedbackTaskDone} currentTime={currentTime} isAllTasksDone={isAllTasksDone}
                     />
                   )}
                   {activeTab === 'map' && <SmartGuidanceView lang={lang} spots={spots} />}
@@ -576,18 +614,9 @@
           );
         }
 
-        // --- Views Components ---
-        function HomeView({ lang, onNavigate, envData, spots, isTransportTaskDone, isConsumptionTaskDone, isOneDayTaskDone, isHalfDayTaskDone, isFactoryTaskDone, isEcoTaskDone, isFeedbackTaskDone }) {
+        function HomeView({ lang, onNavigate, envData, spots, isTransportTaskDone, isConsumptionTaskDone, isOneDayTaskDone, isHalfDayTaskDone, isFactoryTaskDone, isEcoTaskDone, isFeedbackTaskDone, currentTime, isAllTasksDone }) {
           const highSpots = spots.filter(s => s.status === 'high' && s.type !== 'transport');
           const alertNames = highSpots.map(s => `「${lang === 'en' ? s.nameEn : s.name}」`).join(lang === 'en' ? ' and ' : '與');
-          const [currentTime, setCurrentTime] = useState(new Date());
-
-          useEffect(() => {
-            const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-            return () => clearInterval(timer);
-          }, []);
-
-          const formattedTime = `${currentTime.getFullYear()}/${(currentTime.getMonth()+1).toString().padStart(2, '0')}/${currentTime.getDate().toString().padStart(2, '0')} ${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}`;
 
           return (
             <div className="p-4 space-y-6 animate-fade-in">
@@ -597,7 +626,7 @@
                     <MapPin className="w-4 h-4 mr-1" /> {lang === 'en' ? 'Puli Real-Time Environment' : '南投埔里 即時環境資訊'}
                   </h2>
                   <span className="text-[11px] font-medium text-gray-400 flex items-center bg-gray-50 px-2 py-1 rounded-md border border-gray-100 shadow-sm">
-                    <Clock className="w-3 h-3 mr-1" /> {formattedTime}
+                    <Clock className="w-3 h-3 mr-1" /> {currentTime}
                   </span>
                 </div>
                 
@@ -641,7 +670,10 @@
               )}
 
               <section>
-                <h2 className="text-lg font-bold text-gray-800 mb-3">{lang === 'en' ? 'Today\'s Green Tasks' : '今日綠色任務'}</h2>
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-lg font-bold text-gray-800">{lang === 'en' ? 'Today\'s Green Tasks' : '今日綠色任務'}</h2>
+                  {isAllTasksDone && <span className="text-xs font-bold text-emerald-600">✨ All Done!</span>}
+                </div>
                 <div className="space-y-3">
                   <TaskCard lang={lang} icon={<Bus className="text-green-600" />} title={lang === 'en' ? 'Low-Carbon Transport' : '低碳移動'} desc={lang === 'en' ? 'Take public transport twice' : '累積搭乘兩次大眾運輸'} points={20} isDone={isTransportTaskDone} />
                   <TaskCard lang={lang} icon={<QrCode className="text-blue-600" />} title={lang === 'en' ? 'Green Consumption' : '綠色消費'} desc={lang === 'en' ? 'Spend at partner stores' : '於合作在地店家消費'} points={50} isDone={isConsumptionTaskDone} />
@@ -694,46 +726,48 @@
           const tourismSpots = spots.filter(s => !transportNames.includes(s.name));
 
           const renderSpotCard = (spot) => (
-            <div key={spot.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center flex-wrap gap-1.5">
-                    <h3 className="font-bold text-gray-800">{lang === 'en' ? spot.nameEn : spot.name}</h3>
-                    {spot.subCategory && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                        {lang === 'en' ? spot.subCategoryEn : spot.subCategory}
-                      </span>
-                    )}
+            <div key={spot.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mb-4">
+              <div className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center flex-wrap gap-1.5">
+                      <h3 className="font-bold text-gray-800">{lang === 'en' ? spot.nameEn : spot.name}</h3>
+                      {spot.subCategory && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                          {lang === 'en' ? spot.subCategoryEn : spot.subCategory}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-500 flex items-center mt-1">
+                      <Navigation className="w-3 h-3 mr-1" /> {lang === 'en' ? `Dist. ${spot.dist}` : `距離 ${spot.dist}`}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-500 flex items-center mt-1">
-                    <Navigation className="w-3 h-3 mr-1" /> {lang === 'en' ? `Dist. ${spot.dist}` : `距離 ${spot.dist}`}
-                  </span>
-                </div>
-                <div className="flex flex-col items-end flex-shrink-0 ml-2">
-                  <div className={`px-2 py-1 rounded text-[11px] font-bold text-white flex items-center ${getStatusColor(spot.status)}`}>
-                    {getStatusText(spot.status)}
+                  <div className="flex flex-col items-end flex-shrink-0 ml-2">
+                    <div className={`px-2 py-1 rounded text-[11px] font-bold text-white flex items-center ${getStatusColor(spot.status)}`}>
+                      {getStatusText(spot.status)}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {spot.longDesc && (
-                <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                  <p className="text-xs text-gray-600 leading-relaxed text-justify">
-                    {lang === 'en' ? spot.longDescEn : spot.longDesc}
-                  </p>
+                {spot.longDesc && (
+                  <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <p className="text-xs text-gray-600 leading-relaxed text-justify">
+                      {lang === 'en' ? spot.longDescEn : spot.longDesc}
+                    </p>
+                  </div>
+                )}
+                
+                <div className="mt-3">
+                  <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className={`h-1.5 rounded-full ${getStatusColor(spot.status)}`} style={{ width: `${spot.crowd}%` }}></div>
+                  </div>
                 </div>
-              )}
-              
-              <div className="mt-3">
-                <div className="w-full bg-gray-100 rounded-full h-1.5">
-                  <div className={`h-1.5 rounded-full ${getStatusColor(spot.status)}`} style={{ width: `${spot.crowd}%` }}></div>
-                </div>
-              </div>
 
-              <div className="mt-3 pt-3 border-t border-gray-50 flex">
-                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name)}`} target="_blank" rel="noreferrer" className="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-sm font-medium flex items-center justify-center hover:bg-blue-100 transition cursor-pointer">
-                  <Navigation className="w-4 h-4 mr-1.5" /> {lang === 'en' ? 'Take Me There' : '帶我去'}
-                </a>
+                <div className="mt-3 pt-3 border-t border-gray-50 flex">
+                  <a href={"https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(spot.name)} target="_blank" rel="noreferrer" className="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-sm font-medium flex items-center justify-center hover:bg-blue-100 transition cursor-pointer">
+                    <Navigation className="w-4 h-4 mr-1.5" /> {lang === 'en' ? 'Take Me There' : '帶我去'}
+                  </a>
+                </div>
               </div>
             </div>
           );
@@ -754,14 +788,14 @@
                 <h3 className="font-bold text-gray-700 mb-3 flex items-center">
                   <Bus className="w-5 h-5 mr-2 text-blue-600" /> {lang === 'en' ? 'Transport Hubs' : '交通樞紐'}
                 </h3>
-                <div className="space-y-3">{transportSpots.map(renderSpotCard)}</div>
+                <div>{transportSpots.map(renderSpotCard)}</div>
               </div>
 
               <div className="mb-6">
                 <h3 className="font-bold text-gray-700 mb-3 flex items-center">
                   <MapPin className="w-5 h-5 mr-2 text-emerald-600" /> {lang === 'en' ? 'Tourist Spots' : '旅遊景點'}
                 </h3>
-                <div className="space-y-3">{tourismSpots.map(renderSpotCard)}</div>
+                <div>{tourismSpots.map(renderSpotCard)}</div>
               </div>
 
               {selectedSpot && (
@@ -1040,7 +1074,6 @@
           );
         }
 
-        // 將 React 渲染到網頁畫面上
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
 
